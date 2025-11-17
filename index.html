@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent CPU Scheduler Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖥️ Intelligent CPU Scheduler Simulator</h1>
+            <p>Visualize and analyze CPU scheduling algorithms</p>
+        </div>
+
+        <div class="form-section">
+            <h3>⚙️ Configuration</h3>
+
+            <div class="form-group">
+                <label for="algorithm">Select Algorithm:</label>
+                <select id="algorithm" onchange="toggleInputs()">
+                    <option value="FCFS">First Come First Serve (FCFS)</option>
+                    <option value="SJF">Shortest Job First (SJF) - Non-Preemptive</option>
+                    <option value="SRTF">Shortest Remaining Time First (SRTF) - Preemptive</option>
+                    <option value="RR">Round Robin (RR)</option>
+                    <option value="Priority_NP">Priority Scheduling - Non-Preemptive</option>
+                    <option value="Priority_P">Priority Scheduling - Preemptive</option>
+                </select>
+            </div>
+
+            <div class="form-group hidden" id="quantumGroup">
+                <label for="quantum">Time Quantum (for Round Robin):</label>
+                <input type="number" id="quantum" value="2" min="1">
+            </div>
+
+            <div class="form-group">
+                <label for="numProcesses">Number of Processes:</label>
+                <input type="number" id="numProcesses" value="0" min="0" max="10">
+            </div>
+
+            <button class="btn-secondary" onclick="generateProcessInputs()">
+                🔄 Generate Process Fields
+            </button>
+        </div>
+
+        <div class="form-section">
+            <h3>📋 Process Details</h3>
+            <p style="color: #666; margin-bottom: 15px; font-size: 0.95em;" id="priorityNote" class="hidden">
+                💡 <strong>Priority Note:</strong> Lower number = Higher priority (e.g., Priority 1 > Priority 5)
+            </p>
+            <div id="processInputs" class="process-inputs"></div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="simulate()">
+                ▶️ Simulate
+            </button>
+            <button class="btn-secondary" onclick="resetAll()">
+                🔄 Reset All
+            </button>
+        </div>
+
+        <div class="results" id="results">
+            <div class="result-header">
+                <h2>📊 Simulation Results</h2>
+                <p id="algorithmNameHeader"></p>
+            </div>
+
+            <div class="algorithm-info" id="algorithmInfo"></div>
+
+            <div class="gantt-section">
+                <h3>📊 Gantt Chart</h3>
+                <div class="gantt-container">
+                    <div class="gantt-timeline" id="ganttChart"></div>
+                </div>
+            </div>
+
+            <div class="table-section">
+                <h3 style="color: #333; margin-bottom: 20px;">📑 Process Details</h3>
+                <table>
+                    <thead>
+                        <tr id="tableHeader">
+                            <th>Process ID</th>
+                            <th>Arrival Time</th>
+                            <th>Burst Time</th>
+                            <th class="priority-col">Priority</th>
+                            <th>Completion Time</th>
+                            <th>Turnaround Time</th>
+                            <th>Waiting Time</th>
+                            <th>Response Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+
+            <h3 style="color: #333; margin: 30px 0 15px 0; font-size: 1.4em;">📈 Performance Metrics</h3>
+            <div class="metrics-grid" id="metricsGrid"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
