@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent CPU Scheduler Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+
+        .form-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        select,
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        select:focus,
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .process-inputs {
+            display: grid;
+            gap: 20px;
+        }
+
+        .process-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .process-card h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .process-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 35px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .results {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .result-header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .result-header h2 {
+            font-size: 2.2em;
+            margin-bottom: 5px;
+        }
+
+        .algorithm-info {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .algorithm-info strong {
+            color: #856404;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .metric-card h3 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .metric-card p {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        /* Formula text in metric cards */
+        .metric-formula {
+            font-size: 0.7em;
+            opacity: 0.85;
+            font-style: italic;
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .gantt-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .gantt-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .gantt-container {
+            width: 100%;
+            background: white;
+            padding: 30px 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .gantt-timeline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 80px;
+            width: 100%;
+            position: relative;
+        }
+
+        .gantt-bar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 60px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.95em;
+            border-right: 2px solid #333;
+            position: relative;
+            margin: 0;
+            flex-shrink: 1;
+            flex-grow: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .gantt-bar:first-child {
+            border-left: 2px solid #333;
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+        }
+
+        .gantt-bar:last-child {
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+
+        .gantt-time-marker {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.75em;
+            color: #666;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .gantt-time-marker.start {
+            left: 0px;
+        }
+
+        .gantt-time-marker.end {
+            right: 0px;
+        }
+
+        .table-section {
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: center;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tbody tr:hover {
+            background: #e9ecef;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .process-fields {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .gantt-bar {
+                font-size: 0.8em;
+            }
+
+            .gantt-time-marker {
+                font-size: 0.65em;
+            }
+
+            .metric-formula {
+                font-size: 0.65em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖥️ Intelligent CPU Scheduler Simulator</h1>
+            <p>Visualize and analyze CPU scheduling algorithms</p>
+        </div>
+
+        <div class="form-section">
+            <h3>⚙️ Configuration</h3>
+
+            <div class="form-group">
+                <label for="algorithm">Select Algorithm:</label>
+                <select id="algorithm" onchange="toggleInputs()">
+                    <option value="FCFS">First Come First Serve (FCFS)</option>
+                    <option value="SJF">Shortest Job First (SJF) - Non-Preemptive</option>
+                    <option value="SRTF">Shortest Remaining Time First (SRTF) - Preemptive</option>
+                    <option value="RR">Round Robin (RR)</option>
+                    <option value="Priority_NP">Priority Scheduling - Non-Preemptive</option>
+                    <option value="Priority_P">Priority Scheduling - Preemptive</option>
+                </select>
+            </div>
+
+            <div class="form-group hidden" id="quantumGroup">
+                <label for="quantum">Time Quantum (for Round Robin):</label>
+                <input type="number" id="quantum" value="2" min="1">
+            </div>
+
+            <div class="form-group">
+                <label for="numProcesses">Number of Processes:</label>
+                <input type="number" id="numProcesses" value="0" min="0" max="10">
+            </div>
+
+            <button class="btn-secondary" onclick="generateProcessInputs()">
+                🔄 Generate Process Fields
+            </button>
+        </div>
+
+        <div class="form-section">
+            <h3>📋 Process Details</h3>
+            <p style="color: #666; margin-bottom: 15px; font-size: 0.95em;" id="priorityNote" class="hidden">
+                💡 <strong>Priority Note:</strong> Lower number = Higher priority (e.g., Priority 1 > Priority 5)
+            </p>
+            <div id="processInputs" class="process-inputs"></div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="simulate()">
+                ▶️ Simulate
+            </button>
+            <button class="btn-secondary" onclick="resetAll()">
+                🔄 Reset All
+            </button>
+        </div>
+
+        <div class="results" id="results">
+            <div class="result-header">
+                <h2>📊 Simulation Results</h2>
+                <p id="algorithmNameHeader"></p>
+            </div>
+
+            <div class="algorithm-info" id="algorithmInfo"></div>
+
+            <!-- Gantt Chart -->
+            <div class="gantt-section">
+                <h3>📊 Gantt Chart</h3>
+                <div class="gantt-container">
+                    <div class="gantt-timeline" id="ganttChart"></div>
+                </div>
+            </div>
+
+            <!-- Process Table -->
+            <div class="table-section">
+                <h3 style="color: #333; margin-bottom: 20px;">📑 Process Details</h3>
+                <table>
+                    <thead>
+                        <tr id="tableHeader">
+                            <th>Process ID</th>
+                            <th>Arrival Time</th>
+                            <th>Burst Time</th>
+                            <th class="priority-col">Priority</th>
+                            <th>Completion Time</th>
+                            <th>Turnaround Time</th>
+                            <th>Waiting Time</th>
+                            <th>Response Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Performance Metrics at the END -->
+            <h3 style="color: #333; margin: 30px 0 15px 0; font-size: 1.4em;">📈 Performance Metrics</h3>
+            <div class="metrics-grid" id="metricsGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        class Process {
+            constructor(pid, arrival, burst, priority) {
+                this.pid = pid;
+                this.arrival = arrival;
+                this.burst = burst;
+                this.priority = priority;
+                this.completion = 0;
+                this.turnaround = 0;
+                this.waiting = 0;
+                this.remaining = burst;
+                this.start = -1;
+                this.response = 0;
+            }
+        }
+
+        let processes = [];
+        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788'];
+
+        const algoDescriptions = {
+            'FCFS': 'Non-Preemptive: Processes executed in order of arrival.',
+            'SJF': 'Non-Preemptive: Process with shortest burst time executes first.',
+            'SRTF': 'Preemptive SJF: Process with shortest remaining time executes.',
+            'RR': 'Preemptive: Each process gets a fixed time quantum.',
+            'Priority_NP': 'Non-Preemptive: Highest priority process executes first.',
+            'Priority_P': 'Preemptive: Can be interrupted by higher priority arrivals.'
+        };
+
+        const priorityAlgorithms = ['Priority_NP', 'Priority_P'];
+
+        function toggleInputs() {
+            const algorithm = document.getElementById('algorithm').value;
+            document.getElementById('quantumGroup').classList.toggle('hidden', algorithm !== 'RR');
+            document.getElementById('priorityNote').classList.toggle('hidden', !priorityAlgorithms.includes(algorithm));
+        }
+
+        function generateProcessInputs() {
+            const numProcesses = parseInt(document.getElementById('numProcesses').value);
+            const container = document.getElementById('processInputs');
+            container.innerHTML = '';
+
+            if (numProcesses === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center;">Please enter number of processes greater than 0</p>';
+                return;
+            }
+
+            for (let i = 0; i < numProcesses; i++) {
+                const card = document.createElement('div');
+                card.className = 'process-card';
+                card.innerHTML = `
+                    <h4>Process ${i + 1}</h4>
+                    <div class="process-fields">
+                        <div>
+                            <label>Process ID</label>
+                            <input type="text" id="pid_${i}" value="P${i + 1}">
+                        </div>
+                        <div>
+                            <label>Arrival Time</label>
+                            <input type="number" id="arrival_${i}" value="0" min="0">
+                        </div>
+                        <div>
+                            <label>Burst Time</label>
+                            <input type="number" id="burst_${i}" value="0" min="0">
+                        </div>
+                        <div>
+                            <label>Priority</label>
+                            <input type="number" id="priority_${i}" value="0" min="0">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        function fcfsScheduling(processes) {
+            const sorted = [...processes].sort((a, b) => a.arrival - b.arrival);
+            let currentTime = 0;
+            const gantt = [];
+
+            sorted.forEach(p => {
+                if (currentTime < p.arrival) currentTime = p.arrival;
+                p.start = currentTime;
+                p.completion = currentTime + p.burst;
+                p.turnaround = p.completion - p.arrival;
+                p.waiting = p.turnaround - p.burst;
+                p.response = p.start - p.arrival;
+                gantt.push({ pid: p.pid, start: p.start, end: p.completion });
+                currentTime = p.completion;
+            });
+            return { processes: sorted, gantt };
+        }
+
+        function sjfScheduling(processes) {
+            const remaining = processes.map(p => ({ ...p }));
+            const completed = [];
+            const gantt = [];
+            let currentTime = 0;
+
+            while (remaining.length > 0) {
+                const available = remaining.filter(p => p.arrival <= currentTime);
+                if (available.length === 0) {
+                    currentTime = Math.min(...remaining.map(p => p.arrival));
+                    continue;
+                }
+                const shortest = available.reduce((min, p) => p.burst < min.burst ? p : min);
+                const index = remaining.indexOf(shortest);
+                shortest.start = currentTime;
+                shortest.completion = currentTime + shortest.burst;
+                shortest.turnaround = shortest.completion - shortest.arrival;
+                shortest.waiting = shortest.turnaround - shortest.burst;
+                shortest.response = shortest.start - shortest.arrival;
+                gantt.push({ pid: shortest.pid, start: shortest.start, end: shortest.completion });
+                currentTime = shortest.completion;
+                completed.push(shortest);
+                remaining.splice(index, 1);
+            }
+            return { processes: completed, gantt };
+        }
+
+        function srtfScheduling(processes) {
+            const processQueue = processes.map(p => ({ ...p, remaining: p.burst }));
+            const completed = [];
+            const gantt = [];
+            let currentTime = 0;
+            let lastProcess = null;
+
+            while (processQueue.some(p => p.remaining > 0)) {
+                const available = processQueue.filter(p => p.arrival <= currentTime && p.remaining > 0);
+                if (available.length === 0) {
+                    currentTime++;
+                    continue;
+                }
+                const shortest = available.reduce((min, p) => p.remaining < min.remaining ? p : min);
+                if (shortest.start === -1) shortest.start = currentTime;
+                if (lastProcess !== shortest.pid) {
+                    if (lastProcess !== null) gantt[gantt.length - 1].end = currentTime;
+                    gantt.push({ pid: shortest.pid, start: currentTime, end: currentTime + 1 });
+                    lastProcess = shortest.pid;
+                }
+                shortest.remaining--;
+                currentTime++;
+                if (shortest.remaining === 0) {
+                    shortest.completion = currentTime;
+                    shortest.turnaround = shortest.completion - shortest.arrival;
+                    shortest.waiting = shortest.turnaround - shortest.burst;
+                    shortest.response = shortest.start - shortest.arrival;
+                    completed.push(shortest);
+                    gantt[gantt.length - 1].end = currentTime;
+                }
+            }
+            return { processes: completed, gantt };
+        }
+
+        function roundRobinScheduling(processes, quantum) {
+            const queue = [];
+            const gantt = [];
+            const completed = [];
+            let currentTime = 0;
+            const remaining = processes.map(p => ({ ...p, remaining: p.burst })).sort((a, b) => a.arrival - b.arrival);
+            let i = 0;
+
+            if (remaining.length > 0) queue.push(remaining[i++]);
+
+            while (queue.length > 0 || i < remaining.length) {
+                if (queue.length === 0) {
+                    currentTime = remaining[i].arrival;
+                    queue.push(remaining[i++]);
+                }
+                const process = queue.shift();
+                if (process.start === -1) process.start = currentTime;
+                const execTime = Math.min(quantum, process.remaining);
+                const startTime = currentTime;
+                process.remaining -= execTime;
+                currentTime += execTime;
+                gantt.push({ pid: process.pid, start: startTime, end: currentTime });
+                while (i < remaining.length && remaining[i].arrival <= currentTime) {
+                    queue.push(remaining[i++]);
+                }
+                if (process.remaining > 0) {
+                    queue.push(process);
+                } else {
+                    process.completion = currentTime;
+                    process.turnaround = process.completion - process.arrival;
+                    process.waiting = process.turnaround - process.burst;
+                    process.response = process.start - process.arrival;
+                    completed.push(process);
+                }
+            }
+            return { processes: completed, gantt };
+        }
+
+        function priorityNPScheduling(processes) {
+            const remaining = processes.map(p => ({ ...p }));
+            const completed = [];
+            const gantt = [];
+            let currentTime = 0;
+
+            while (remaining.length > 0) {
+                const available = remaining.filter(p => p.arrival <= currentTime);
+                if (available.length === 0) {
+                    currentTime = Math.min(...remaining.map(p => p.arrival));
+                    continue;
+                }
+                const highest = available.reduce((min, p) => p.priority < min.priority ? p : min);
+                const index = remaining.indexOf(highest);
+                highest.start = currentTime;
+                highest.completion = currentTime + highest.burst;
+                highest.turnaround = highest.completion - highest.arrival;
+                highest.waiting = highest.turnaround - highest.burst;
+                highest.response = highest.start - highest.arrival;
+                gantt.push({ pid: highest.pid, start: highest.start, end: highest.completion });
+                currentTime = highest.completion;
+                completed.push(highest);
+                remaining.splice(index, 1);
+            }
+            return { processes: completed, gantt };
+        }
+
+        function priorityPScheduling(processes) {
+            const processQueue = processes.map(p => ({ ...p, remaining: p.burst }));
+            const completed = [];
+            const gantt = [];
+            let currentTime = 0;
+            let lastProcess = null;
+
+            while (processQueue.some(p => p.remaining > 0)) {
+                const available = processQueue.filter(p => p.arrival <= currentTime && p.remaining > 0);
+                if (available.length === 0) {
+                    currentTime++;
+                    continue;
+                }
+                const highest = available.reduce((min, p) => p.priority < min.priority ? p : min);
+                if (highest.start === -1) highest.start = currentTime;
+                if (lastProcess !== highest.pid) {
+                    if (lastProcess !== null) gantt[gantt.length - 1].end = currentTime;
+                    gantt.push({ pid: highest.pid, start: currentTime, end: currentTime + 1 });
+                    lastProcess = highest.pid;
+                }
+                highest.remaining--;
+                currentTime++;
+                if (highest.remaining === 0) {
+                    highest.completion = currentTime;
+                    highest.turnaround = highest.completion - highest.arrival;
+                    highest.waiting = highest.turnaround - highest.burst;
+                    highest.response = highest.start - highest.arrival;
+                    completed.push(highest);
+                    gantt[gantt.length - 1].end = currentTime;
+                }
+            }
+            return { processes: completed, gantt };
+        }
+
+        function calculateMetrics(processes) {
+            const avgWaiting = processes.reduce((sum, p) => sum + p.waiting, 0) / processes.length;
+            const avgTurnaround = processes.reduce((sum, p) => sum + p.turnaround, 0) / processes.length;
+            const avgResponse = processes.reduce((sum, p) => sum + p.response, 0) / processes.length;
+            const maxCompletion = Math.max(...processes.map(p => p.completion));
+            const throughput = processes.length / maxCompletion;
+
+            return {
+                avgWaiting: avgWaiting.toFixed(2),
+                avgTurnaround: avgTurnaround.toFixed(2),
+                avgResponse: avgResponse.toFixed(2),
+                throughput: throughput.toFixed(4),
+                totalProcesses: processes.length,
+                totalTime: maxCompletion
+            };
+        }
+
+        function drawGanttChart(gantt) {
+            const container = document.getElementById('ganttChart');
+            container.innerHTML = '';
+
+            const maxTime = Math.max(...gantt.map(g => g.end));
+            const containerWidth = container.parentElement.offsetWidth - 40;
+            const totalWidth = containerWidth * 0.95;
+
+            gantt.forEach((g, index) => {
+                const widthPercent = ((g.end - g.start) / maxTime) * 100;
+                const bar = document.createElement('div');
+                bar.className = 'gantt-bar';
+                bar.style.width = widthPercent + '%';
+                bar.style.backgroundColor = colors[parseInt(g.pid.replace('P', '')) % colors.length];
+
+                let timeLabels = '';
+                if (index === 0) timeLabels += `<span class="gantt-time-marker start">${g.start}</span>`;
+                timeLabels += `<span class="gantt-time-marker end">${g.end}</span>`;
+
+                bar.innerHTML = `${g.pid}${timeLabels}`;
+                container.appendChild(bar);
+            });
+        }
+
+        function displayResults(result, metrics, algorithm) {
+            const algorithmText = document.getElementById('algorithm').options[document.getElementById('algorithm').selectedIndex].text;
+            document.getElementById('algorithmNameHeader').textContent = algorithmText;
+            document.getElementById('algorithmInfo').innerHTML = `<strong>Algorithm:</strong> ${algorithmText}<br><strong>Description:</strong> ${algoDescriptions[algorithm]}`;
+
+            drawGanttChart(result.gantt);
+
+            const showPriority = priorityAlgorithms.includes(algorithm);
+            document.querySelectorAll('.priority-col').forEach(col => {
+                col.style.display = showPriority ? 'table-cell' : 'none';
+            });
+
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            result.processes.forEach(p => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${p.pid}</strong></td>
+                    <td>${p.arrival}</td>
+                    <td>${p.burst}</td>
+                    <td class="priority-col" style="display: ${showPriority ? 'table-cell' : 'none'}">${p.priority}</td>
+                    <td>${p.completion}</td>
+                    <td>${p.turnaround}</td>
+                    <td>${p.waiting}</td>
+                    <td>${p.response}</td>
+                `;
+            });
+
+            // Performance Metrics with Formulas
+            document.getElementById('metricsGrid').innerHTML = `
+                <div class="metric-card">
+                    <h3>${metrics.avgWaiting}</h3>
+                    <p>Avg Waiting Time</p>
+                    <div class="metric-formula">ΣWT / n</div>
+                </div>
+                <div class="metric-card">
+                    <h3>${metrics.avgTurnaround}</h3>
+                    <p>Avg Turnaround Time</p>
+                    <div class="metric-formula">ΣTAT / n</div>
+                </div>
+                <div class="metric-card">
+                    <h3>${metrics.avgResponse}</h3>
+                    <p>Avg Response Time</p>
+                    <div class="metric-formula">ΣRT / n</div>
+                </div>
+                <div class="metric-card">
+                    <h3>${metrics.throughput}</h3>
+                    <p>Throughput</p>
+                    <div class="metric-formula">n / Total Time</div>
+                </div>
+            `;
+
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function simulate() {
+            const algorithm = document.getElementById('algorithm').value;
+            const numProcesses = parseInt(document.getElementById('numProcesses').value);
+            const quantum = parseInt(document.getElementById('quantum').value);
+
+            if (numProcesses === 0) {
+                alert('Please enter number of processes greater than 0');
+                return;
+            }
+
+            processes = [];
+            for (let i = 0; i < numProcesses; i++) {
+                const pid = document.getElementById(`pid_${i}`).value;
+                const arrival = parseInt(document.getElementById(`arrival_${i}`).value);
+                const burst = parseInt(document.getElementById(`burst_${i}`).value);
+                const priority = parseInt(document.getElementById(`priority_${i}`).value);
+                processes.push(new Process(pid, arrival, burst, priority));
+            }
+
+            let result;
+            switch (algorithm) {
+                case 'FCFS': result = fcfsScheduling(processes); break;
+                case 'SJF': result = sjfScheduling(processes); break;
+                case 'SRTF': result = srtfScheduling(processes); break;
+                case 'RR': result = roundRobinScheduling(processes, quantum); break;
+                case 'Priority_NP': result = priorityNPScheduling(processes); break;
+                case 'Priority_P': result = priorityPScheduling(processes); break;
+            }
+
+            const metrics = calculateMetrics(result.processes);
+            displayResults(result, metrics, algorithm);
+        }
+
+        function resetAll() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('processInputs').innerHTML = '';
+            document.getElementById('numProcesses').value = 0;
+            document.getElementById('algorithm').value = 'FCFS';
+            toggleInputs();
+        }
+
+        window.onload = function () {
+            // Don't auto-generate on load since numProcesses starts at 0
+        };
+    </script>
+</body>
+
+</html>
